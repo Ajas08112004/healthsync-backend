@@ -31,6 +31,10 @@ def get_db_connection():
     except:
         print("⚠️ DB not connected")
         return None
+    
+@app.route("/")
+def home():
+    return "HealthSync API is running 🚀"
 
 @app.route("/patients", methods=["GET"])
 def get_patients():
