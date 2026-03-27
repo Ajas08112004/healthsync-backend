@@ -21,16 +21,24 @@ user_states = {}
 app = Flask(__name__)
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="Ajas2004*",
-        database="healthsync"
-    )
+    try:
+        return mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="yourpassword",
+            database="healthsync"
+        )
+    except:
+        print("⚠️ DB not connected")
+        return None
 
 @app.route("/patients", methods=["GET"])
 def get_patients():
     conn = get_db_connection()
+    if not conn:
+
+        return "Database not connected"
+    
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("SELECT * FROM patients")
@@ -53,6 +61,10 @@ def add_patient():
         return jsonify({"error": "Name and phone are required"}), 400
 
     conn = get_db_connection()
+
+    if not conn:
+        return "Database not connected"
+    
     cursor = conn.cursor()
 
     sql = """
@@ -85,6 +97,9 @@ def add_appointment():
         return jsonify({"error": "All fields are required"}), 400
 
     conn = get_db_connection()
+
+    if not conn:
+        return "Database not connected"
     cursor = conn.cursor()
 
     try:
@@ -108,6 +123,8 @@ def add_appointment():
 @app.route("/appointments", methods=["GET"])
 def get_appointments():
     conn = get_db_connection()
+    if not conn:
+        return "Database not connected"
     cursor = conn.cursor(dictionary=True)
 
     query = """
@@ -170,6 +187,9 @@ def check_appointments():
     print("🔄 Checking for upcoming appointments...", flush=True)
 
     conn = get_db_connection()
+    if not conn:
+        print("⚠️ DB not connected, skipping check", flush=True)
+        return
     cursor = conn.cursor(dictionary=True)
 
     now = datetime.now()
@@ -240,6 +260,9 @@ def whatsapp():
     state = user_states.get(from_number, {})
 
     conn = get_db_connection()
+    if not conn:
+        msg.body("⚠️ Database not connected. Try again later.")
+        return str(resp)
     cursor = conn.cursor(dictionary=True)
 
     # 🔍 Check if patient exists
@@ -396,7 +419,7 @@ def whatsapp():
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
-    scheduler.add_job(check_appointments, 'interval', seconds=10)  # faster testing
+    #scheduler.add_job(check_appointments, 'interval', seconds=10)  # faster testing
     scheduler.start()
 
     app.run(debug=True, use_reloader=False)
