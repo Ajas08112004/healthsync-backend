@@ -417,9 +417,7 @@ def whatsapp():
 
     return str(resp)
 
-if __name__ == "__main__":
-    scheduler = BackgroundScheduler()
-    #scheduler.add_job(check_appointments, 'interval', seconds=10)  # faster testing
-    scheduler.start()
 
-    app.run(debug=True, use_reloader=False)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
